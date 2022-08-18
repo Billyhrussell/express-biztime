@@ -43,5 +43,20 @@ router.post("/", async function (req, res) {
 });
 
 
+router.put('/:code', async function (req,res){
+  // if ("id" in req.body) throw new BadRequestError("Not allowed");
+
+  const code = req.params.code;
+  const results = await db.query(
+    `UPDATE companies
+         SET name=$1, description = $2
+         WHERE code = $3
+         RETURNING name, description`,
+    [req.body.name, req.body.description, code]);
+  const company = results.rows[0];
+
+  if (!company) throw new NotFoundError(`No matching company: ${code}`);
+  return res.json({ company });
+})
 
 module.exports = router;
