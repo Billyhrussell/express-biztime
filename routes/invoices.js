@@ -6,6 +6,8 @@ const db = require("../db");
 
 const {BadRequestError, NotFoundError} = require('../expressError.js')
 
+const slugify = require('slugify');
+
 /**
  * Returns info on invoices: {invoices: [{id, comp_code}, ...]}
  */
@@ -21,6 +23,7 @@ const {BadRequestError, NotFoundError} = require('../expressError.js')
  * Returns {invoice: {id, amt, paid, add_date, paid_date,
  *  company: {code, name, description}}
  */
+
  router.get("/:id", async function(req,res){
   const id = req.params.id;
 
@@ -49,6 +52,7 @@ const {BadRequestError, NotFoundError} = require('../expressError.js')
  * passed in JSON body of: {comp_code, amt}
  * Returns: {invoice: {id, comp_code, amt, paid, add_date, paid_date}}
  */
+
 router.post("/", async function(req, res){
   const {comp_code, amt} = req.body;
 
@@ -61,6 +65,44 @@ router.post("/", async function(req, res){
   const invoice = results.rows[0];
 
   return res.status(201).json({ invoice });
+})
+
+/* passed in a JSON body of {amt}
+ * Returns: {invoice: {id, comp_code, amt, paid, add_date, paid_date}}
+ */
+
+router.put('/:id', async function (req,res){
+  const { amt } = req.body;
+  const id = req.params.id;
+
+  const results = await db.query(
+    `UPDATE invoices
+         SET amt=$1
+         WHERE id = $2
+         RETURNING id, comp_code, amt, paid, add_date, paid_date`,
+    [amt, id]);
+  const invoice = results.rows[0];
+
+  if (!invoice) throw new NotFoundError(`No matching invoice: ${id}`);
+  return res.json({ invoice });
+})
+
+/* Delete invoice
+ * Returns: {status: "deleted"}
+ */
+
+router.delete('/:id', async function (req, res){
+  const id = req.params.id;
+
+  const results  = await db.query(
+    `DELETE FROM invoices WHERE id = $1 RETURNING id`,
+    [id],
+    );
+    const invoice = results.rows[0];
+
+
+    if (!invoice) throw new NotFoundError(`No matching invoice: ${id}`);
+    return res.json({ message: "Deleted" });
 })
 
 
