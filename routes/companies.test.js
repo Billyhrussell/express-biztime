@@ -55,3 +55,22 @@ describe("POST /companies", function(){
 })
 
 });
+
+describe("PUT /companies", function(){
+  test('updating a company', async function(){
+    const resp = await request(app).put('/companies/apple')
+      .send({name: 'new apple', description: 'even faster'});
+
+
+    expect(resp.body).toEqual({company: {"name": "new-apple",
+                              "description": "even faster"}});
+  })
+})
+
+describe('DELETE /companies', function(){
+  test('deleting a company', async function(){
+    const resp = await request(app).delete('/companies/apple');
+
+    expect(resp.body).toEqual({"message": "Deleted"})
+  })
+})
