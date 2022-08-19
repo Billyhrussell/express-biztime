@@ -35,6 +35,7 @@ router.get("/:code", async function(req,res){
 
   if (!company) throw new NotFoundError(`No matching company: ${code}`);
 
+  //TODO: dont need to join
   const iResults = await db.query(
     `SELECT i.id
       FROM invoices AS i
